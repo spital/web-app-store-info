@@ -1,0 +1,5 @@
+python-fasthtml
+gunicorn
+werkzeug
+uvicorn
+python-dotenv

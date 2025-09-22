@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - QuickSave</title>
+    <!-- Pico.css for styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <!-- HTMX for dynamic form handling -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+    <main class="container" style="max-width: 500px; margin-top: 5rem;">
+        <article>
+            <h1 style="text-align: center;">QuickSave</h1>
+
+            <!--
+              - hx-post: Submits the form data to the /login endpoint via POST.
+              - hx-target: Specifies that the response should replace the content of the #error-message div.
+              - hx-swap: Defines how the content should be swapped (in this case, innerHTML).
+              - On successful login, the server will send a 302 redirect via an HX-Redirect header, which HTMX will follow.
+            -->
+            <form hx-post="/login" hx-target="#error-message" hx-swap="innerHTML">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Username" required>
+
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+
+                <button type="submit">Login</button>
+            </form>
+
+            <!-- This div will be updated with an error message on failed login attempts -->
+            <div id="error-message" style="color: var(--pico-color-red-500); margin-top: 1rem; text-align: center;"></div>
+        </article>
+    </main>
+</body>
+</html>

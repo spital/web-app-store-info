@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Mount the data directory for the SQLite database
+      - ./data:/app/data
+    networks:
+      - quicksave_net
+    # No ports are exposed to the host, as Nginx is the entrypoint.
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Mount the Nginx configuration file as read-only
+      - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf:ro
+      # Mount the SSL certificate directory as read-only
+      # The user must create a './ssl' directory with the required certs.
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    networks:
+      - quicksave_net
+
+# Define the network for communication between services
+networks:
+  quicksave_net:
+    driver: bridge

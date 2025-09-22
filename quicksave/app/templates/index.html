@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - QuickSave</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        /* Make forms reset after successful submission */
+        .htmx-settling form {
+            opacity: 0.5;
+            transition: opacity 300ms ease-in-out;
+        }
+        form {
+            opacity: 1;
+            transition: opacity 300ms ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <header class="container">
+        <nav>
+            <ul>
+                <li><strong>QuickSave Dashboard</strong></li>
+            </ul>
+            <ul>
+                <li>Welcome, {{username}}!</li>
+                <li><a href="/logout" class="secondary">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div id="status-message" style="text-align: center; margin-bottom: 1rem; min-height: 1.5rem; transition: all 300ms ease-in-out;">
+            <!-- Status messages from form submissions will appear here -->
+        </div>
+
+        <div class="grid">
+            <!-- Save Note/URL -->
+            <article>
+                <hgroup>
+                    <h2>Save a Note or URL</h2>
+                    <p>Quickly save a piece of text or a link.</p>
+                </hgroup>
+                <form hx-post="/add/note" hx-target="#status-message" @submit="this.reset()">
+                    <textarea name="content" placeholder="Type your note or paste a URL here..." required></textarea>
+                    <button type="submit">Save Note</button>
+                </form>
+            </article>
+
+            <!-- Save Image -->
+            <article>
+                <hgroup>
+                    <h2>Save an Image</h2>
+                    <p>Upload an image file from your device.</p>
+                </hgroup>
+                <form hx-post="/add/image" hx-encoding="multipart/form-data" hx-target="#status-message" @submit="this.reset()">
+                    <input type="file" name="file" accept="image/*" required>
+                    <button type="submit">Save Image</button>
+                </form>
+            </article>
+        </div>
+
+        <div class="grid">
+            <!-- Save Document -->
+            <article>
+                <hgroup>
+                    <h2>Save a Document</h2>
+                    <p>Upload any document (PDF, DOCX, etc.).</p>
+                </hgroup>
+                <form hx-post="/add/document" hx-encoding="multipart/form-data" hx-target="#status-message" @submit="this.reset()">
+                    <input type="file" name="file" required>
+                    <button type="submit">Save Document</button>
+                </form>
+            </article>
+
+            <!-- Take a Photo -->
+            <article>
+                <hgroup>
+                    <h2>Take a Photo</h2>
+                    <p>Use your camera to snap and save a photo.</p>
+                </hgroup>
+                <form hx-post="/add/photo" hx-encoding="multipart/form-data" hx-target="#status-message" @submit="this.reset()">
+                    <input type="file" name="file" accept="image/*" capture="environment" required>
+                    <button type="submit">Take and Save Photo</button>
+                </form>
+            </article>
+        </div>
+    </main>
+</body>
+</html>
