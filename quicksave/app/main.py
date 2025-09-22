@@ -1,7 +1,7 @@
 import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
-from fasthtml.fastapp import FastHTML, serve, session, state
+from fasthtml.fastapp import FastHTML, serve
 from fasthtml.components import *
 from dotenv import load_dotenv
 from starlette.datastructures import UploadFile
@@ -82,7 +82,7 @@ def load_users_from_env():
 # --- Application Routes ---
 
 @app.get("/login")
-def login_get():
+def login_get(session):
     """Serves the static login HTML page."""
     # If user is already logged in, redirect them to the home page.
     if session.get('user_id'):
@@ -98,7 +98,7 @@ def login_get():
         return P("Error: Login page not found."), 500
 
 @app.post("/login")
-def login_post(username: str, password: str):
+def login_post(username: str, password: str, session):
     """Handles the login form submission, designed to work with HTMX."""
     with get_db_conn() as conn:
         cursor = conn.cursor()
@@ -118,14 +118,14 @@ def login_post(username: str, password: str):
         return P('Invalid username or password.', style="color: var(--pico-color-red-500);")
 
 @app.get("/logout")
-def logout():
+def logout(session):
     """Clears the session and redirects the user to the login page."""
     session.clear()
     return hx_redirect('/login')
 
 
 @app.get("/")
-def home():
+def home(session):
     """
     The main application page. Requires login.
     Renders the index.html template with dynamic data.
@@ -153,7 +153,7 @@ def save_item(user_id: int, item_type: str, content: bytes):
         conn.commit()
 
 @app.post("/add/note")
-def add_note(content: str):
+def add_note(content: str, session):
     """Saves a text note."""
     if not (user_id := session.get('user_id')):
         return hx_redirect('/login')
@@ -164,7 +164,7 @@ def add_note(content: str):
     save_item(user_id, 'note', content.encode('utf-8'))
     return P("Note saved successfully!", style="color: var(--pico-color-green-500);")
 
-async def handle_upload(file: UploadFile, item_type: str):
+async def handle_upload(file: UploadFile, item_type: str, session):
     """Generic handler for file uploads."""
     if not (user_id := session.get('user_id')):
         return hx_redirect('/login')
