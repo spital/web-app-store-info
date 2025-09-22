@@ -1,0 +1,19 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.[oa]
+*.so
+
+# Environment variables
+.env
+.env.*
+
+# Database
+data/
+*.sqlite3
+
+# IDE / Editor specific
+.vscode/
+.idea/
+*.swp
+*.swo
