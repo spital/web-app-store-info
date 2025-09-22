@@ -1,4 +1,4 @@
-fasthtml
+python-fasthtml
 gunicorn
 werkzeug
 uvicorn

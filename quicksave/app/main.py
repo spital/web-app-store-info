@@ -1,10 +1,11 @@
 import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
-from fasthtml.fastapp import FastHTML, serve, hdrs, session, state
+from fasthtml.fastapp import FastHTML, serve, session, state
 from fasthtml.components import *
 from dotenv import load_dotenv
 from starlette.datastructures import UploadFile
+from starlette.responses import Response
 
 # Load environment variables from .env file for local development
 load_dotenv()
@@ -13,6 +14,10 @@ load_dotenv()
 # The 'secret' is used for signing session cookies
 app = FastHTML(secret=os.environ.get("APP_SECRET_KEY", "your-default-secret-key"))
 db_path = 'data/quicksave.db'
+
+def hx_redirect(url: str):
+    """Creates a response that triggers an HTMX redirect."""
+    return Response(headers={'HX-Redirect': url})
 
 # --- Database Connection ---
 def get_db_conn():
@@ -81,7 +86,7 @@ def login_get():
     """Serves the static login HTML page."""
     # If user is already logged in, redirect them to the home page.
     if session.get('user_id'):
-        return (hdrs.HX_Redirect('/'),)
+        return hx_redirect('/')
 
     # This is a simple way to serve a static file. For a larger app,
     # serving static assets should be handled by Nginx.
@@ -106,7 +111,7 @@ def login_post(username: str, password: str):
         session['username'] = user['username']
 
         # This header tells HTMX to perform a full page redirect to the home page.
-        return (hdrs.HX_Redirect('/'),)
+        return hx_redirect('/')
     else:
         # On failure, return an HTML fragment with an error message.
         # HTMX will place this inside the '#error-message' div on the login page.
@@ -116,7 +121,7 @@ def login_post(username: str, password: str):
 def logout():
     """Clears the session and redirects the user to the login page."""
     session.clear()
-    return (hdrs.HX_Redirect('/login'),)
+    return hx_redirect('/login')
 
 
 @app.get("/")
@@ -126,7 +131,7 @@ def home():
     Renders the index.html template with dynamic data.
     """
     if not session.get('user_id'):
-        return (hdrs.HX_Redirect('/login'),)
+        return hx_redirect('/login')
 
     try:
         with open('app/templates/index.html', 'r', encoding='utf-8') as f:
@@ -151,7 +156,7 @@ def save_item(user_id: int, item_type: str, content: bytes):
 def add_note(content: str):
     """Saves a text note."""
     if not (user_id := session.get('user_id')):
-        return (hdrs.HX_Redirect('/login'),)
+        return hx_redirect('/login')
 
     if not content or not content.strip():
         return P("Note content cannot be empty.", style="color: var(--pico-color-red-500);")
@@ -162,7 +167,7 @@ def add_note(content: str):
 async def handle_upload(file: UploadFile, item_type: str):
     """Generic handler for file uploads."""
     if not (user_id := session.get('user_id')):
-        return (hdrs.HX_Redirect('/login'),)
+        return hx_redirect('/login')
 
     if not file or not file.filename:
         return P("File not provided.", style="color: var(--pico-color-red-500);")
