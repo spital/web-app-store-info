@@ -5,7 +5,7 @@ from fasthtml.fastapp import FastHTML, serve
 from fasthtml.components import *
 from dotenv import load_dotenv
 from starlette.datastructures import UploadFile
-from starlette.responses import Response
+from starlette.responses import Response, RedirectResponse
 
 # Load environment variables from .env file for local development
 load_dotenv()
@@ -15,9 +15,15 @@ load_dotenv()
 app = FastHTML(secret=os.environ.get("APP_SECRET_KEY", "your-default-secret-key"))
 db_path = 'data/quicksave.db'
 
-def hx_redirect(url: str):
-    """Creates a response that triggers an HTMX redirect."""
-    return Response(headers={'HX-Redirect': url})
+def smart_redirect(url: str, htmx: bool = False):
+    """
+    Redirects the user.
+    Sends a standard 307 redirect for regular requests,
+    and an HX-Redirect header for HTMX requests.
+    """
+    if htmx:
+        return Response(headers={'HX-Redirect': url})
+    return RedirectResponse(url=url)
 
 # --- Database Connection ---
 def get_db_conn():
@@ -82,11 +88,11 @@ def load_users_from_env():
 # --- Application Routes ---
 
 @app.get("/login")
-def login_get(session):
+def login_get(session, htmx: bool = False):
     """Serves the static login HTML page."""
     # If user is already logged in, redirect them to the home page.
     if session.get('user_id'):
-        return hx_redirect('/')
+        return smart_redirect('/', htmx=htmx)
 
     # This is a simple way to serve a static file. For a larger app,
     # serving static assets should be handled by Nginx.
@@ -98,7 +104,7 @@ def login_get(session):
         return P("Error: Login page not found."), 500
 
 @app.post("/login")
-def login_post(username: str, password: str, session):
+def login_post(username: str, password: str, session, htmx: bool = False):
     """Handles the login form submission, designed to work with HTMX."""
     with get_db_conn() as conn:
         cursor = conn.cursor()
@@ -111,27 +117,27 @@ def login_post(username: str, password: str, session):
         session['username'] = user['username']
 
         # This header tells HTMX to perform a full page redirect to the home page.
-        return hx_redirect('/')
+        return smart_redirect('/', htmx=htmx)
     else:
         # On failure, return an HTML fragment with an error message.
         # HTMX will place this inside the '#error-message' div on the login page.
         return P('Invalid username or password.', style="color: var(--pico-color-red-500);")
 
 @app.get("/logout")
-def logout(session):
+def logout(session, htmx: bool = False):
     """Clears the session and redirects the user to the login page."""
     session.clear()
-    return hx_redirect('/login')
+    return smart_redirect('/login', htmx=htmx)
 
 
 @app.get("/")
-def home(session):
+def home(session, htmx: bool = False):
     """
     The main application page. Requires login.
     Renders the index.html template with dynamic data.
     """
     if not session.get('user_id'):
-        return hx_redirect('/login')
+        return smart_redirect('/login', htmx=htmx)
 
     try:
         with open('app/templates/index.html', 'r', encoding='utf-8') as f:
@@ -153,10 +159,10 @@ def save_item(user_id: int, item_type: str, content: bytes):
         conn.commit()
 
 @app.post("/add/note")
-def add_note(content: str, session):
+def add_note(content: str, session, htmx: bool = False):
     """Saves a text note."""
     if not (user_id := session.get('user_id')):
-        return hx_redirect('/login')
+        return smart_redirect('/login', htmx=htmx)
 
     if not content or not content.strip():
         return P("Note content cannot be empty.", style="color: var(--pico-color-red-500);")
@@ -164,10 +170,10 @@ def add_note(content: str, session):
     save_item(user_id, 'note', content.encode('utf-8'))
     return P("Note saved successfully!", style="color: var(--pico-color-green-500);")
 
-async def handle_upload(file: UploadFile, item_type: str, session):
+async def handle_upload(file: UploadFile, item_type: str, session, htmx: bool = False):
     """Generic handler for file uploads."""
     if not (user_id := session.get('user_id')):
-        return hx_redirect('/login')
+        return smart_redirect('/login', htmx=htmx)
 
     if not file or not file.filename:
         return P("File not provided.", style="color: var(--pico-color-red-500);")
