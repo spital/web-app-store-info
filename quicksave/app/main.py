@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import logging
 from werkzeug.security import generate_password_hash, check_password_hash
 from fasthtml.fastapp import FastHTML, serve
 from fasthtml.components import *
@@ -9,6 +10,9 @@ from starlette.responses import Response, RedirectResponse
 
 # Load environment variables from .env file for local development
 load_dotenv()
+
+# --- Logging Setup ---
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # --- App Setup ---
 # The 'secret' is used for signing session cookies
@@ -106,22 +110,30 @@ def login_get(session, htmx: bool = False):
 @app.post("/login")
 def login_post(username: str, password: str, session, htmx: bool = False):
     """Handles the login form submission, designed to work with HTMX."""
+    logging.info(f"Login attempt for username: '{username}'")
     with get_db_conn() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
         user = cursor.fetchone()
 
-    if user and check_password_hash(user['password_hash'], password):
-        # On successful login, set the user's ID and username in the session.
-        session['user_id'] = user['id']
-        session['username'] = user['username']
-
-        # This header tells HTMX to perform a full page redirect to the home page.
-        return smart_redirect('/', htmx=htmx)
+    if user:
+        logging.info(f"User '{username}' found in the database.")
+        password_match = check_password_hash(user['password_hash'], password)
+        logging.info(f"Password check for user '{username}': {'Success' if password_match else 'Failed'}")
+        if password_match:
+            # On successful login, set the user's ID and username in the session.
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            logging.info(f"Login successful for user '{username}'. Redirecting to home.")
+            # This header tells HTMX to perform a full page redirect to the home page.
+            return smart_redirect('/', htmx=htmx)
     else:
-        # On failure, return an HTML fragment with an error message.
-        # HTMX will place this inside the '#error-message' div on the login page.
-        return P('Invalid username or password.', style="color: var(--pico-color-red-500);")
+        logging.warning(f"User '{username}' not found in the database.")
+
+    # On failure, return an HTML fragment with an error message.
+    # HTMX will place this inside the '#error-message' div on the login page.
+    logging.warning(f"Invalid login attempt for username: '{username}'")
+    return P('Invalid username or password.', style="color: var(--pico-color-red-500);")
 
 @app.get("/logout")
 def logout(session, htmx: bool = False):
