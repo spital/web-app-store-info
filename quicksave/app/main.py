@@ -260,8 +260,5 @@ check_data_directory_permissions()
 init_db()
 load_users_from_env()
 
-# This is for running locally without Gunicorn
-if __name__ == '__main__':
-    # Get port from environment variable, default to 8888 if not set
-    port = int(os.getenv("PORT", "8888"))
-    serve(port=port)
+# The application is now started via the `run_dev.sh` script which calls uvicorn directly.
+# This __main__ block is no longer needed.

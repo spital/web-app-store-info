@@ -1,6 +1,5 @@
 #!/bin/bash
 # This script starts the QuickSave application in development mode.
-# It changes to the 'quicksave' directory and then runs the Python application.
 #
 # You can pass a port number as an argument to this script.
 # If no port is provided, it defaults to 8888.
@@ -9,16 +8,10 @@
 # ./run_dev.sh
 # ./run_dev.sh 8000
 
-export PORT=$1
+export PORT=${1:-8888}
 
-if [ -z "$PORT" ]; then
-  echo "Starting QuickSave on default port (8888)"
-  PORT=8888
-else
-  echo "Starting QuickSave on port $PORT"
-fi
+echo "Starting QuickSave on port $PORT"
 
-cd quicksave
-# The PORT environment variable is already exported, so we can just run the command
-# We run as a module (-m) to ensure relative imports work correctly.
-python -m app.main
+# We run uvicorn directly and point it to the 'app' instance in 'quicksave.app.main'.
+# This is the standard way to run uvicorn and ensures the reloader works correctly.
+uvicorn quicksave.app.main:app --reload --port $PORT --host 0.0.0.0
