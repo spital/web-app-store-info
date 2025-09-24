@@ -71,22 +71,42 @@ def init_db():
 
 # --- User Loading ---
 def load_users_from_env():
-    """Loads users from environment variables into the database."""
+    """
+    Synchronizes users from environment variables with the database.
+    - Adds users from .env that are not in the database.
+    - Deletes users from the database that are not in the .env file.
+    - Updates passwords for existing users if they have changed in .env.
+    """
+    env_users = {}
+    for i in range(1, 11):  # Checks for USER_1 to USER_10
+        user_var = os.environ.get(f'USER_{i}')
+        if user_var and ':' in user_var:
+            username, password = user_var.split(':', 1)
+            env_users[username] = password
+
     with get_db_conn() as conn:
         cursor = conn.cursor()
 
-        for i in range(1, 11): # Checks for USER_1 to USER_10
-            user_var = os.environ.get(f'USER_{i}')
-            if user_var and ':' in user_var:
-                username, password = user_var.split(':', 1)
+        # Get all users from the database
+        cursor.execute("SELECT id, username, password_hash FROM users")
+        db_users = {row['username']: {'id': row['id'], 'hash': row['password_hash']} for row in cursor.fetchall()}
 
-                # Check if user already exists
-                cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
-                if cursor.fetchone() is None:
-                    # User does not exist, so insert them
-                    password_hash = generate_password_hash(password)
-                    cursor.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, password_hash))
-                    print(f"User '{username}' created.")
+        # Users to add/update
+        for username, password in env_users.items():
+            password_hash = generate_password_hash(password)
+            if username not in db_users:
+                cursor.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, password_hash))
+                print(f"User '{username}' created.")
+            elif not check_password_hash(db_users[username]['hash'], password):
+                cursor.execute("UPDATE users SET password_hash = ? WHERE username = ?", (password_hash, username))
+                print(f"Password for user '{username}' updated.")
+
+        # Users to delete
+        for username in db_users:
+            if username not in env_users:
+                cursor.execute("DELETE FROM users WHERE username = ?", (username,))
+                print(f"User '{username}' deleted.")
+
         conn.commit()
 
 # --- Application Routes ---
