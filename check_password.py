@@ -5,7 +5,8 @@ from werkzeug.security import check_password_hash
 
 def get_db_conn():
     """Establishes a connection to the database."""
-    db_path = os.path.join(os.path.dirname(__file__), 'quicksave', 'data', 'quicksave.db')
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(script_dir, 'quicksave', 'data', 'quicksave.db')
     if not os.path.exists(db_path):
         print(f"Error: Database file not found at {db_path}")
         sys.exit(1)

@@ -1,4 +1,5 @@
 import os
+import sys
 import sqlite3
 import logging
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -35,6 +36,30 @@ def get_db_conn():
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
+
+def check_data_directory_permissions():
+    """
+    Checks if the application has write permissions to the data directory.
+    If not, it prints a helpful error message and exits. This is a common
+    issue when switching between Docker (runs as root) and local dev.
+    """
+    # Note: This path is relative to the `quicksave` directory,
+    # where run_dev.sh changes into.
+    data_dir = 'data'
+    os.makedirs(data_dir, exist_ok=True)
+
+    if not os.access(data_dir, os.W_OK):
+        abs_path = os.path.abspath(data_dir)
+        user = os.getenv('USER', 'your_user')
+        error_message = (
+            f"\\n!!! PERMISSION ERROR !!!\\n"
+            f"The application does not have write permissions for the data directory: {abs_path}\\n"
+            f"This is likely because the directory was created by Docker with root permissions.\\n\\n"
+            f"To fix this, please run the following command in your terminal:\\n"
+            f"sudo chown -R {user}:{user} {abs_path}\\n"
+        )
+        print(error_message, file=sys.stderr)
+        sys.exit(1)
 
 # --- Database Initialization ---
 def init_db():
@@ -238,6 +263,7 @@ async def add_photo(file: UploadFile):
 
 # --- Startup Logic ---
 # This code runs once when the application starts, whether with 'serve()' or Gunicorn.
+check_data_directory_permissions()
 init_db()
 load_users_from_env()
 
