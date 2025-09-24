@@ -8,6 +8,7 @@ from fasthtml.components import *
 from dotenv import load_dotenv
 from starlette.datastructures import UploadFile
 from starlette.responses import Response, RedirectResponse
+from .config import DB_PATH, DATA_DIR
 
 # Load environment variables from .env file for local development
 load_dotenv()
@@ -18,7 +19,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # --- App Setup ---
 # The 'secret' is used for signing session cookies
 app = FastHTML(secret=os.environ.get("APP_SECRET_KEY", "your-default-secret-key"))
-db_path = 'data/quicksave.db'
 
 def smart_redirect(url: str, htmx: bool = False):
     """
@@ -33,7 +33,7 @@ def smart_redirect(url: str, htmx: bool = False):
 # --- Database Connection ---
 def get_db_conn():
     """Establishes a connection to the database."""
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -43,20 +43,16 @@ def check_data_directory_permissions():
     If not, it prints a helpful error message and exits. This is a common
     issue when switching between Docker (runs as root) and local dev.
     """
-    # Note: This path is relative to the `quicksave` directory,
-    # where run_dev.sh changes into.
-    data_dir = 'data'
-    os.makedirs(data_dir, exist_ok=True)
+    os.makedirs(DATA_DIR, exist_ok=True)
 
-    if not os.access(data_dir, os.W_OK):
-        abs_path = os.path.abspath(data_dir)
+    if not os.access(DATA_DIR, os.W_OK):
         user = os.getenv('USER', 'your_user')
         error_message = (
             f"\\n!!! PERMISSION ERROR !!!\\n"
-            f"The application does not have write permissions for the data directory: {abs_path}\\n"
+            f"The application does not have write permissions for the data directory: {DATA_DIR}\n"
             f"This is likely because the directory was created by Docker with root permissions.\\n\\n"
             f"To fix this, please run the following command in your terminal:\\n"
-            f"sudo chown -R {user}:{user} {abs_path}\\n"
+            f"sudo chown -R {user}:{user} {DATA_DIR}\n"
         )
         print(error_message, file=sys.stderr)
         sys.exit(1)
@@ -64,9 +60,6 @@ def check_data_directory_permissions():
 # --- Database Initialization ---
 def init_db():
     """Initializes the database and creates tables if they don't exist."""
-    # Ensure the data directory exists
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
-
     with get_db_conn() as conn:
         cursor = conn.cursor()
 

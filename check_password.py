@@ -3,14 +3,15 @@ import sys
 import sqlite3
 from werkzeug.security import check_password_hash
 
+from quicksave.app.config import DB_PATH
+
 def get_db_conn():
     """Establishes a connection to the database."""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'quicksave', 'data', 'quicksave.db')
-    if not os.path.exists(db_path):
-        print(f"Error: Database file not found at {db_path}")
+    if not os.path.exists(DB_PATH):
+        print(f"Error: Database file not found at {DB_PATH}")
+        print("Please run the main application first to create the database.")
         sys.exit(1)
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 

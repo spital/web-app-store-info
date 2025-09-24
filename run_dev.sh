@@ -20,4 +20,5 @@ fi
 
 cd quicksave
 # The PORT environment variable is already exported, so we can just run the command
-python app/main.py
+# We run as a module (-m) to ensure relative imports work correctly.
+python -m app.main
