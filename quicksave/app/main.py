@@ -211,4 +211,6 @@ load_users_from_env()
 
 # This is for running locally without Gunicorn
 if __name__ == '__main__':
-    serve()
+    # Get port from environment variable, default to 8888 if not set
+    port = int(os.getenv("PORT", "8888"))
+    serve(port=port)
