@@ -23,12 +23,13 @@ app = FastHTML(secret=os.environ.get("APP_SECRET_KEY", "your-default-secret-key"
 def smart_redirect(url: str, htmx: bool = False):
     """
     Redirects the user.
-    Sends a standard 307 redirect for regular requests,
+    Sends a standard 303 redirect for regular requests,
     and an HX-Redirect header for HTMX requests.
+    A 303 redirect instructs the browser to change the request method to GET.
     """
     if htmx:
         return Response(headers={'HX-Redirect': url})
-    return RedirectResponse(url=url)
+    return RedirectResponse(url=url, status_code=303)
 
 # --- Database Connection ---
 def get_db_conn():
