@@ -4,22 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - QuickSave</title>
-    <!-- Pico.css for styling -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-    <!-- HTMX for dynamic form handling -->
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
 <body>
     <main class="container" style="max-width: 500px; margin-top: 5rem;">
         <article>
             <h1 style="text-align: center;">QuickSave</h1>
 
-            <!--
-              - hx-post: Submits the form data to the /login endpoint via POST.
-              - hx-target: Specifies that the response should replace the content of the #login-form-message div.
-              - hx-swap: Defines how the content should be swapped (in this case, innerHTML).
-            -->
-            <form id="login-form" hx-post="/login" hx-target="#login-form-message" hx-swap="innerHTML">
+            <form id="login-form" method="post" action="{{ url_for('login') }}">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" placeholder="Username" required>
 
@@ -29,22 +21,10 @@
                 <button id="login-button" type="submit">Login</button>
             </form>
 
-            <!-- This div will be updated with messages on form submission -->
-            <div id="login-form-message" style="margin-top: 1rem; text-align: center;"></div>
+            <div id="login-form-message" style="margin-top: 1rem; text-align: center;">
+                {{ flash_message }}
+            </div>
         </article>
     </main>
-
-    <script>
-        // Add an event listener to the form to provide user feedback on submission.
-        document.getElementById('login-form').addEventListener('htmx:beforeRequest', function(event) {
-            const loginButton = document.getElementById('login-button');
-            const messageDiv = document.getElementById('login-form-message');
-
-            // Disable the button to prevent multiple submissions.
-            loginButton.disabled = true;
-            // Provide immediate feedback to the user.
-            messageDiv.innerHTML = '<p><i>Logging in...</i></p>';
-        });
-    </script>
 </body>
 </html>

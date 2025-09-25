@@ -1,5 +1,6 @@
-python-fasthtml
-gunicorn
-werkzeug
-uvicorn
+Quart
+Quart-Session
+Jinja2
+Werkzeug
 python-dotenv
+hypercorn
