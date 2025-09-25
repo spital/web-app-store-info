@@ -8,7 +8,7 @@ from fasthtml.components import *
 from dotenv import load_dotenv
 from starlette.datastructures import UploadFile
 from starlette.responses import Response, RedirectResponse
-from .config import DB_PATH, DATA_DIR, TEMPLATES_DIR
+from config import DB_PATH, DATA_DIR, TEMPLATES_DIR
 
 # Load environment variables from .env file for local development
 load_dotenv()
