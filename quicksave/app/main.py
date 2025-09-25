@@ -93,8 +93,9 @@ def load_users_from_env():
     """
     Synchronizes users from environment variables with the database.
     - Adds users from .env that are not in the database.
-    - Deletes users from the database that are not in the .env file.
     - Updates passwords for existing users if they have changed in .env.
+    - NOTE: This function is designed to be safe for concurrent execution
+      by multiple server workers on startup.
     """
     env_users = {}
     for i in range(1, 11):  # Checks for USER_1 to USER_10
@@ -103,28 +104,33 @@ def load_users_from_env():
             username, password = user_var.split(':', 1)
             env_users[username] = password
 
+    if not env_users:
+        return
+
     with get_db_conn() as conn:
         cursor = conn.cursor()
 
-        # Get all users from the database
-        cursor.execute("SELECT id, username, password_hash FROM users")
-        db_users = {row['username']: {'id': row['id'], 'hash': row['password_hash']} for row in cursor.fetchall()}
-
-        # Users to add/update
         for username, password in env_users.items():
             password_hash = generate_password_hash(password)
-            if username not in db_users:
-                cursor.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, password_hash))
-                print(f"User '{username}' created.")
-            elif not check_password_hash(db_users[username]['hash'], password):
-                cursor.execute("UPDATE users SET password_hash = ? WHERE username = ?", (password_hash, username))
-                print(f"Password for user '{username}' updated.")
 
-        # Users to delete
-        for username in db_users:
-            if username not in env_users:
-                cursor.execute("DELETE FROM users WHERE username = ?", (username,))
-                print(f"User '{username}' deleted.")
+            cursor.execute("SELECT password_hash FROM users WHERE username = ?", (username,))
+            user_row = cursor.fetchone()
+
+            if user_row is None:
+                # User does not exist, try to insert.
+                try:
+                    cursor.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, password_hash))
+                    print(f"User '{username}' created.")
+                except sqlite3.IntegrityError:
+                    # This can happen if another worker process created the user
+                    # between our SELECT and INSERT. We can ignore it and the
+                    # password will be checked and updated on the next startup.
+                    print(f"User '{username}' already exists, likely created by another process. Skipping insert.")
+            else:
+                # User exists, check if the password needs to be updated.
+                if not check_password_hash(user_row['password_hash'], password):
+                    cursor.execute("UPDATE users SET password_hash = ? WHERE username = ?", (password_hash, username))
+                    print(f"Password for user '{username}' updated.")
 
         conn.commit()
 
