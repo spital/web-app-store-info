@@ -166,9 +166,12 @@ def login_post(username: str, password: str, session, htmx: bool = False):
             session['user_id'] = user['id']
             session['username'] = user['username']
             logging.info(f"Login successful for user '{username}'.")
-            # Return a 200 OK response. HTMX will see the 'hx-redirect'
-            # attribute on the form and redirect the user to the home page.
-            return Response(status_code=200)
+            # Upon successful login, we send back a script that performs a client-side redirect.
+            # This is a reliable way to ensure redirection after a successful HTMX form submission.
+            return """<script>
+                        document.getElementById('login-form-message').innerHTML = '<p style="color: var(--pico-color-green-500);">Login successful! Redirecting...</p>';
+                        window.location.href = '/';
+                    </script>"""
     else:
         logging.warning(f"User '{username}' not found in the database.")
 

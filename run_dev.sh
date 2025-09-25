@@ -22,4 +22,5 @@ echo "Starting QuickSave on port $PORT"
 # --- Server Execution ---
 # We run uvicorn directly and point it to the 'app' instance in 'quicksave.app.main'.
 # This is the standard way to run uvicorn and ensures the reloader works correctly.
-uvicorn quicksave.app.main:app --reload --port $PORT --host 0.0.0.0
+# We use a custom log configuration to ensure all log messages have a timestamp.
+uvicorn quicksave.app.main:app --reload --port $PORT --host 0.0.0.0 --log-config quicksave/app/log_config.yaml

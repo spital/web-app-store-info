@@ -16,24 +16,35 @@
 
             <!--
               - hx-post: Submits the form data to the /login endpoint via POST.
-              - hx-target: Specifies that the response should replace the content of the #error-message div.
+              - hx-target: Specifies that the response should replace the content of the #login-form-message div.
               - hx-swap: Defines how the content should be swapped (in this case, innerHTML).
-              - hx-redirect: On a successful (2xx) response, redirect to the given URL.
-              - On successful login, the server will send a 200 OK, and HTMX will redirect.
             -->
-            <form hx-post="/login" hx-target="#error-message" hx-swap="innerHTML" hx-redirect="/">
+            <form id="login-form" hx-post="/login" hx-target="#login-form-message" hx-swap="innerHTML">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" placeholder="Username" required>
 
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" placeholder="Password" required>
 
-                <button type="submit">Login</button>
+                <button id="login-button" type="submit">Login</button>
             </form>
 
-            <!-- This div will be updated with an error message on failed login attempts -->
-            <div id="error-message" style="color: var(--pico-color-red-500); margin-top: 1rem; text-align: center;"></div>
+            <!-- This div will be updated with messages on form submission -->
+            <div id="login-form-message" style="margin-top: 1rem; text-align: center;"></div>
         </article>
     </main>
+
+    <script>
+        // Add an event listener to the form to provide user feedback on submission.
+        document.getElementById('login-form').addEventListener('htmx:beforeRequest', function(event) {
+            const loginButton = document.getElementById('login-button');
+            const messageDiv = document.getElementById('login-form-message');
+
+            // Disable the button to prevent multiple submissions.
+            loginButton.disabled = true;
+            // Provide immediate feedback to the user.
+            messageDiv.innerHTML = '<p><i>Logging in...</i></p>';
+        });
+    </script>
 </body>
 </html>
