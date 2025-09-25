@@ -9,3 +9,6 @@ DB_PATH = os.path.join(PROJECT_ROOT, 'data', 'quicksave.db')
 
 # The absolute path to the data directory
 DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
+
+# The absolute path to the templates directory
+TEMPLATES_DIR = os.path.join(PROJECT_ROOT, 'app', 'templates')

@@ -8,7 +8,7 @@ from fasthtml.components import *
 from dotenv import load_dotenv
 from starlette.datastructures import UploadFile
 from starlette.responses import Response, RedirectResponse
-from .config import DB_PATH, DATA_DIR
+from .config import DB_PATH, DATA_DIR, TEMPLATES_DIR
 
 # Load environment variables from .env file for local development
 load_dotenv()
@@ -139,10 +139,12 @@ def login_get(session, htmx: bool = False):
     # This is a simple way to serve a static file. For a larger app,
     # serving static assets should be handled by Nginx.
     try:
-        with open('app/templates/login.html', 'r', encoding='utf-8') as f:
+        login_path = os.path.join(TEMPLATES_DIR, 'login.html')
+        with open(login_path, 'r', encoding='utf-8') as f:
             # We return the raw HTML content. The browser will render it.
             return f.read()
     except FileNotFoundError:
+        logging.error(f"Template file not found at path: {login_path}")
         return P("Error: Login page not found."), 500
 
 @app.post("/login")
@@ -190,13 +192,15 @@ def home(session, htmx: bool = False):
         return smart_redirect('/login', htmx=htmx)
 
     try:
-        with open('app/templates/index.html', 'r', encoding='utf-8') as f:
+        index_path = os.path.join(TEMPLATES_DIR, 'index.html')
+        with open(index_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
         username = session.get('username', 'User')
         # Simple template substitution for the username placeholder
         return content.replace('{{username}}', username)
     except FileNotFoundError:
+        logging.error(f"Template file not found at path: {index_path}")
         return P("Error: Main page template not found."), 500
 
 def save_item(user_id: int, item_type: str, content: bytes):
@@ -254,11 +258,14 @@ async def add_photo(file: UploadFile):
     """Saves a photo taken with the camera."""
     return await handle_upload(file, 'photo')
 
-# --- Startup Logic ---
-# This code runs once when the application starts, whether with 'serve()' or Gunicorn.
-check_data_directory_permissions()
-init_db()
-load_users_from_env()
-
-# The application is now started via the `run_dev.sh` script which calls uvicorn directly.
-# This __main__ block is no longer needed.
+@app.on_event("startup")
+async def startup_event():
+    """
+    This function runs once when the application starts.
+    It handles database initialization and user loading.
+    """
+    print("Application startup: Initializing database and loading users...")
+    check_data_directory_permissions()
+    init_db()
+    load_users_from_env()
+    print("Application startup complete.")
