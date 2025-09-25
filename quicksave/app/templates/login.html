@@ -18,9 +18,10 @@
               - hx-post: Submits the form data to the /login endpoint via POST.
               - hx-target: Specifies that the response should replace the content of the #error-message div.
               - hx-swap: Defines how the content should be swapped (in this case, innerHTML).
-              - On successful login, the server will send a 302 redirect via an HX-Redirect header, which HTMX will follow.
+              - hx-redirect: On a successful (2xx) response, redirect to the given URL.
+              - On successful login, the server will send a 200 OK, and HTMX will redirect.
             -->
-            <form hx-post="/login" hx-target="#error-message" hx-swap="innerHTML">
+            <form hx-post="/login" hx-target="#error-message" hx-swap="innerHTML" hx-redirect="/">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" placeholder="Username" required>
 

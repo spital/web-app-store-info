@@ -165,9 +165,10 @@ def login_post(username: str, password: str, session, htmx: bool = False):
             # On successful login, set the user's ID and username in the session.
             session['user_id'] = user['id']
             session['username'] = user['username']
-            logging.info(f"Login successful for user '{username}'. Redirecting to home.")
-            # This header tells HTMX to perform a full page redirect to the home page.
-            return smart_redirect('/', htmx=htmx)
+            logging.info(f"Login successful for user '{username}'.")
+            # Return a 200 OK response. HTMX will see the 'hx-redirect'
+            # attribute on the form and redirect the user to the home page.
+            return Response(status_code=200)
     else:
         logging.warning(f"User '{username}' not found in the database.")
 
