@@ -22,7 +22,13 @@
             </form>
 
             <div id="login-form-message" style="margin-top: 1rem; text-align: center;">
-                {{ flash_message }}
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <p style="color: {{ 'var(--pico-color-green-500)' if category == 'success' else 'var(--pico-color-red-500)' }}">{{ message }}</p>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
             </div>
         </article>
     </main>

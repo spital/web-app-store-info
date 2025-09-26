@@ -1,6 +1,6 @@
 Quart
-Quart-Session
 Jinja2
 Werkzeug
 python-dotenv
 hypercorn
+starlette

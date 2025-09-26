@@ -3,12 +3,10 @@ import sys
 import sqlite3
 import logging
 from werkzeug.security import generate_password_hash, check_password_hash
-from quart import Quart, render_template_string, request, session, redirect, url_for, flash
-from quart_session import Session
+from quart import Quart, render_template, request, session, redirect, url_for, flash
 from dotenv import load_dotenv
 from starlette.datastructures import UploadFile
-from config import DB_PATH, DATA_DIR, TEMPLATES_DIR
-import jinja2
+from .config import DB_PATH, DATA_DIR, TEMPLATES_DIR
 
 # Load environment variables from .env file for local development
 load_dotenv()
@@ -19,42 +17,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # --- App Setup ---
 app = Quart(__name__, template_folder=TEMPLATES_DIR)
 app.secret_key = os.environ.get("APP_SECRET_KEY", "your-default-secret-key")
-
-# Configure server-side sessions
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_FILE_DIR'] = '/tmp/quart_session'
-os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
-Session(app)
-
-# --- Jinja Loader ---
-# Use a custom Jinja loader to read templates from the specified directory
-template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATES_DIR)
-jinja_env = jinja2.Environment(loader=template_loader, autoescape=True)
-
-async def render(template_name: str, **context):
-    """
-    Renders a Jinja template with the given context.
-    - Injects username from session.
-    - Handles flash messages.
-    """
-    # Get flash messages
-    flashed_messages = session.get('_flashes', [])
-    flash_html = ""
-    if flashed_messages:
-        # Get the first message tuple (category, message)
-        category, message = flashed_messages[0]
-        color = "var(--pico-color-green-500)" if category == 'success' else "var(--pico-color-red-500)"
-        flash_html = f'<p style="color: {color};">{message}</p>'
-        session['_flashes'] = [] # Clear flash messages after displaying
-
-    template = jinja_env.get_template(template_name)
-    # Add username and flash message to the render context
-    full_context = {
-        'username': session.get('username', 'User'),
-        'flash_message': flash_html,
-        **context
-    }
-    return await render_template_string(template.render(full_context), **full_context)
 
 
 # --- Database Connection ---
@@ -181,7 +143,7 @@ async def login():
             await flash("Invalid username or password.", 'error')
             return redirect(url_for('login'))
 
-    return await render('login.html')
+    return await render_template('login.html')
 
 @app.route("/logout")
 async def logout():
@@ -193,24 +155,24 @@ async def logout():
 @app.route("/")
 async def home():
     """Serves the main dashboard page."""
-    return await render('index.html')
+    return await render_template('index.html')
 
 # --- Routes for serving action pages ---
 @app.route("/add-note-page")
 async def add_note_page():
-    return await render('add_note.html')
+    return await render_template('add_note.html')
 
 @app.route("/add-image-page")
 async def add_image_page():
-    return await render('add_image.html')
+    return await render_template('add_image.html')
 
 @app.route("/add-document-page")
 async def add_document_page():
-    return await render('add_document.html')
+    return await render_template('add_document.html')
 
 @app.route("/add-photo-page")
 async def add_photo_page():
-    return await render('add_photo.html')
+    return await render_template('add_photo.html')
 
 # --- Helper function for saving items ---
 def save_item(user_id: int, item_type: str, content: bytes):

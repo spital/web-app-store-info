@@ -17,6 +17,5 @@ COPY . .
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
 
-# Run the application with Gunicorn
-# Using Uvicorn workers for an ASGI application like FastHTML
-CMD ["gunicorn", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "main:app", "-b", "0.0.0.0:8000"]
+# Run the application with Hypercorn
+CMD ["hypercorn", "main:app", "--bind", "0.0.0.0:8000", "--workers", "2"]
