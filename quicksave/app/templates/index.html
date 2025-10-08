@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="cs" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - QuickSave</title>
+    <title>Nástěnka - QuickSave</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
         :root {
@@ -37,11 +37,11 @@
     <header class="container">
         <nav>
             <ul>
-                <li><strong>QuickSave Dashboard</strong></li>
+                <li><strong>QuickSave Nástěnka</strong></li>
             </ul>
             <ul>
-                <li><small>Welcome, {{session.username}}!</small></li>
-                <li><a href="{{ url_for('logout') }}" class="secondary"><small>Logout</small></a></li>
+                <li><small>Vítejte, {{session.username}}!</small></li>
+                <li><a href="{{ url_for('logout') }}" class="secondary"><small>Odhlásit</small></a></li>
             </ul>
         </nav>
     </header>
@@ -57,11 +57,15 @@
             {% endwith %}
         </div>
 
+        <form action="/add/note" method="post" style="margin-bottom: 2rem;">
+            <textarea name="content" placeholder="Napište rychlou poznámku a uložte ji..." required rows="4"></textarea>
+            <button type="submit" class="primary" style="width: 100%;">Uložit rychlou poznámku</button>
+        </form>
+
         <div class="action-buttons">
-            <a href="{{ url_for('add_note_page') }}" role="button" class="primary">Save Note or URL</a>
-            <a href="{{ url_for('add_image_page') }}" role="button" class="primary">Save an Image</a>
-            <a href="{{ url_for('add_document_page') }}" role="button" class="primary">Save a Document</a>
-            <a href="{{ url_for('add_photo_page') }}" role="button" class="primary">Take a Photo</a>
+            <a href="{{ url_for('add_image_page') }}" role="button" class="primary">Uložit obrázek</a>
+            <a href="{{ url_for('add_document_page') }}" role="button" class="primary">Uložit dokument</a>
+            <a href="{{ url_for('add_photo_page') }}" role="button" class="primary">Vyfotit</a>
         </div>
     </main>
 </body>

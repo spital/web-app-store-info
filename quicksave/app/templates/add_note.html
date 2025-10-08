@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="cs" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Save Note - QuickSave</title>
+    <title>Uložit poznámku - QuickSave</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
         body {
@@ -25,14 +25,14 @@
 <body>
     <main class="container">
         <hgroup>
-            <h2>Save a Note or URL</h2>
-            <p>Quickly save a piece of text or a link.</p>
+            <h2>Uložit poznámku nebo URL</h2>
+            <p>Rychle uložte text nebo odkaz.</p>
         </hgroup>
         <form action="/add/note" method="post">
-            <textarea name="content" placeholder="Type your note or paste a URL here..." required rows="8"></textarea>
+            <textarea name="content" placeholder="Sem napište poznámku nebo vložte URL..." required rows="8"></textarea>
             <div class="actions">
-                <button type="submit" class="primary">Save Note</button>
-                <a href="/" role="button" class="secondary">Cancel</a>
+                <button type="submit" class="primary">Uložit poznámku</button>
+                <a href="/" role="button" class="secondary">Zrušit</a>
             </div>
         </form>
     </main>

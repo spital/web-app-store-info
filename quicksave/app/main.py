@@ -113,7 +113,7 @@ async def before_request():
     exempt_endpoints = ['login', 'static', 'logout']
 
     if request.endpoint not in exempt_endpoints and 'user_id' not in session:
-        await flash("You must be logged in to view this page.", 'error')
+        await flash("Pro zobrazení této stránky se musíte přihlásit.", 'error')
         return redirect(url_for('login'))
 
 # --- Application Routes ---
@@ -137,10 +137,10 @@ async def login():
         if user and check_password_hash(user['password_hash'], password):
             session['user_id'] = user['id']
             session['username'] = user['username']
-            await flash("Login successful!", 'success')
+            await flash("Přihlášení proběhlo úspěšně!", 'success')
             return redirect(url_for('home'))
         else:
-            await flash("Invalid username or password.", 'error')
+            await flash("Neplatné uživatelské jméno nebo heslo.", 'error')
             return redirect(url_for('login'))
 
     return await render_template('login.html')
@@ -149,7 +149,7 @@ async def login():
 async def logout():
     """Clears the session and redirects to login."""
     session.clear()
-    await flash("You have been logged out.", 'success')
+    await flash("Byli jste odhlášeni.", 'success')
     return redirect(url_for('login'))
 
 @app.route("/")
@@ -187,11 +187,11 @@ async def add_note():
     form = await request.form
     content = form.get('content')
     if not content or not content.strip():
-        await flash("Note content cannot be empty.", 'error')
+        await flash("Obsah poznámky nemůže být prázdný.", 'error')
         return redirect(url_for('add_note_page'))
 
     save_item(session['user_id'], 'note', content.encode('utf-8'))
-    await flash("Note saved successfully!", 'success')
+    await flash("Poznámka byla úspěšně uložena!", 'success')
     return redirect(url_for('home'))
 
 async def handle_upload(item_type: str, redirect_route: str):
@@ -200,17 +200,24 @@ async def handle_upload(item_type: str, redirect_route: str):
     file = files.get('file')
 
     if not file or not file.filename:
-        await flash("No file selected.", 'error')
+        await flash("Nebyl vybrán žádný soubor.", 'error')
         return redirect(url_for(redirect_route))
 
     MAX_FILE_SIZE = 50 * 1024 * 1024 # 50 MB
     content = file.read()
     if len(content) > MAX_FILE_SIZE:
-        await flash(f"File is too large (max {MAX_FILE_SIZE // 1024 // 1024}MB).", 'error')
+        await flash(f"Soubor je příliš velký (max. {MAX_FILE_SIZE // 1024 // 1024} MB).", 'error')
         return redirect(url_for(redirect_route))
 
     save_item(session['user_id'], item_type, content)
-    await flash(f"{item_type.capitalize()} '{file.filename}' saved successfully!", 'success')
+
+    item_type_map = {
+        'image': 'Obrázek',
+        'document': 'Dokument',
+        'photo': 'Fotka'
+    }
+    item_type_cz = item_type_map.get(item_type, item_type.capitalize())
+    await flash(f"{item_type_cz} '{file.filename}' byl úspěšně uložen!", 'success')
     return redirect(url_for('home'))
 
 @app.route("/add/image", methods=['POST'])

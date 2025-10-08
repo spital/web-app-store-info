@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="cs" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Take Photo - QuickSave</title>
+    <title>Vyfotit - QuickSave</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
         body {
@@ -25,14 +25,14 @@
 <body>
     <main class="container">
         <hgroup>
-            <h2>Take a Photo</h2>
-            <p>Use your camera to snap and save a photo.</p>
+            <h2>Vyfotit</h2>
+            <p>Použijte fotoaparát k vyfocení a uložení fotky.</p>
         </hgroup>
         <form action="/add/photo" method="post" enctype="multipart/form-data">
             <input type="file" name="file" accept="image/*" capture="environment" required>
             <div class="actions">
-                <button type="submit" class="primary">Take and Save Photo</button>
-                <a href="/" role="button" class="secondary">Cancel</a>
+                <button type="submit" class="primary">Vyfotit a uložit</button>
+                <a href="/" role="button" class="secondary">Zrušit</a>
             </div>
         </form>
     </main>

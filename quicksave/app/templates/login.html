@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="cs" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - QuickSave</title>
+    <title>Přihlášení - QuickSave</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
 </head>
 <body>
@@ -12,13 +12,13 @@
             <h1 style="text-align: center;">QuickSave</h1>
 
             <form id="login-form" method="post" action="{{ url_for('login') }}">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" placeholder="Username" required>
+                <label for="username">Uživatelské jméno</label>
+                <input type="text" id="username" name="username" placeholder="Uživatelské jméno" required>
 
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Password" required>
+                <label for="password">Heslo</label>
+                <input type="password" id="password" name="password" placeholder="Heslo" required>
 
-                <button id="login-button" type="submit">Login</button>
+                <button id="login-button" type="submit">Přihlásit</button>
             </form>
 
             <div id="login-form-message" style="margin-top: 1rem; text-align: center;">

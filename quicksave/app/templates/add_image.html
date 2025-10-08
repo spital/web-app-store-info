@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="cs" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Save Image - QuickSave</title>
+    <title>Uložit obrázek - QuickSave</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
         body {
@@ -25,14 +25,14 @@
 <body>
     <main class="container">
         <hgroup>
-            <h2>Save an Image</h2>
-            <p>Upload an image file from your device.</p>
+            <h2>Uložit obrázek</h2>
+            <p>Nahrajte obrázek ze svého zařízení.</p>
         </hgroup>
         <form action="/add/image" method="post" enctype="multipart/form-data">
             <input type="file" name="file" accept="image/*" required>
             <div class="actions">
-                <button type="submit" class="primary">Save Image</button>
-                <a href="/" role="button" class="secondary">Cancel</a>
+                <button type="submit" class="primary">Uložit obrázek</button>
+                <a href="/" role="button" class="secondary">Zrušit</a>
             </div>
         </form>
     </main>
