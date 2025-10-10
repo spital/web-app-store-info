@@ -6,11 +6,21 @@
     <title>Uložit obrázek - QuickSave</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
+        html, body {
+            height: 100%;
+        }
         body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
             font-size: 1rem;
         }
-        .container {
-            padding: 1rem;
+        main.container {
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            border: 1px solid var(--pico-muted-border-color);
+            border-radius: var(--pico-border-radius);
         }
         form {
             margin-top: 1.5rem;
@@ -19,6 +29,15 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
+        }
+        @media (max-width: 768px) {
+            body {
+                display: block;
+            }
+            main.container {
+                border: none;
+                padding: 1rem;
+            }
         }
     </style>
 </head>
