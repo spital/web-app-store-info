@@ -204,7 +204,7 @@ async def handle_upload(item_type: str, redirect_route: str):
         return redirect(url_for(redirect_route))
 
     MAX_FILE_SIZE = 50 * 1024 * 1024 # 50 MB
-    content = file.read()
+    content = await file.read()
     if len(content) > MAX_FILE_SIZE:
         await flash(f"Soubor je příliš velký (max. {MAX_FILE_SIZE // 1024 // 1024} MB).", 'error')
         return redirect(url_for(redirect_route))
