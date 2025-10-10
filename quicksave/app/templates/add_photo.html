@@ -6,19 +6,60 @@
     <title>Vyfotit - QuickSave</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
         body {
             font-size: 1rem;
+            display: flex;
+            flex-direction: column;
         }
         .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             padding: 1rem;
         }
         form {
-            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex: 1;
         }
         .actions {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
+            margin-top: 1rem;
+        }
+        #file-upload {
+            display: none;
+        }
+        .file-upload-label {
+            display: block;
+            width: 100%;
+            padding: 2rem 1rem;
+            text-align: center;
+            background-color: var(--pico-primary-background);
+            color: var(--pico-primary-inverse);
+            border-radius: var(--pico-border-radius);
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        .file-upload-label:hover {
+            background-color: var(--pico-primary-hover-background);
+        }
+        #photo-preview {
+            max-width: 100%;
+            max-height: 40vh;
+            margin: 1rem auto;
+            display: none; /* Initially hidden */
+        }
+        #no-photo {
+            text-align: center;
+            margin: 1rem 0;
         }
     </style>
 </head>
@@ -29,12 +70,41 @@
             <p>Použijte fotoaparát k vyfocení a uložení fotky.</p>
         </hgroup>
         <form action="/add/photo" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" accept="image/*" capture="environment" required>
+            <div>
+                <label for="file-upload" class="file-upload-label">Vyfotografuj</label>
+                <input type="file" name="file" id="file-upload" accept="image/*" capture="environment" required onchange="previewPhoto(event)">
+
+                <img id="photo-preview" src="#" alt="Náhled fotky">
+                <p id="no-photo">Žádná fotka</p>
+            </div>
+
             <div class="actions">
-                <button type="submit" class="primary">Vyfotit a uložit</button>
+                <button type="submit" class="primary">Uložit</button>
                 <a href="/" role="button" class="secondary">Zrušit</a>
             </div>
         </form>
     </main>
+    <script>
+        function previewPhoto(event) {
+            const preview = document.getElementById('photo-preview');
+            const noPhotoText = document.getElementById('no-photo');
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function() {
+                preview.src = reader.result;
+                preview.style.display = 'block';
+                noPhotoText.style.display = 'none';
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '#';
+                preview.style.display = 'none';
+                noPhotoText.style.display = 'block';
+            }
+        }
+    </script>
 </body>
 </html>
