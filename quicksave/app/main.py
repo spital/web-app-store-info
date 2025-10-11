@@ -208,23 +208,23 @@ async def handle_upload(item_type: str, redirect_route: str):
 
         MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
 
-        # Read the file in chunks to handle large files efficiently
-        # This is the key change to prevent both truncation and TypeErrors.
-        # Starlette's UploadFile is an async iterator.
+        # Read the file in synchronous chunks to be memory-efficient
+        # without causing a TypeError with the FileStorage object.
         content = bytearray()
-        chunk_count = 0
-        async for chunk in file:
+        chunk_size = 1024 * 1024  # 1MB chunks
+        while True:
+            chunk = file.read(chunk_size)
+            if not chunk:
+                break
             content.extend(chunk)
-            chunk_count += 1
             if len(content) > MAX_FILE_SIZE:
                 await flash(f"Soubor je příliš velký (max. {MAX_FILE_SIZE // 1024 // 1024} MB).", 'error')
                 logging.warning(f"Upload failed: File '{file.filename}' exceeded max size.")
                 return redirect(url_for(redirect_route))
 
-        # Convert bytearray to bytes for saving
         content = bytes(content)
 
-        logging.info(f"File '{file.filename}' read successfully in {chunk_count} chunks, total size: {len(content)} bytes.")
+        logging.info(f"File '{file.filename}' read successfully, total size: {len(content)} bytes.")
 
         save_item(session['user_id'], item_type, content)
         logging.info(f"Item '{file.filename}' of type '{item_type}' saved to database.")
