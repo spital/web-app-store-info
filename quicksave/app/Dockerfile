@@ -8,7 +8,7 @@ WORKDIR /code
 COPY requirements.txt .
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y sqlite3 && rm -rf /var/lib/apt/lists/* && pip install --no-cache-dir -r requirements.txt
 
 # Copy the entire application source code into an 'app' subdirectory
 # This makes the 'app' directory a package that can be imported from.
