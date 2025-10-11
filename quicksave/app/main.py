@@ -195,30 +195,53 @@ async def add_note():
     return redirect(url_for('home'))
 
 async def handle_upload(item_type: str, redirect_route: str):
-    """Generic handler for file uploads."""
-    files = await request.files
-    file = files.get('file')
+    """Generic handler for file uploads with improved logging."""
+    logging.info(f"Starting upload for item_type: {item_type}")
+    try:
+        files = await request.files
+        file = files.get('file')
 
-    if not file or not file.filename:
-        await flash("Nebyl vybrán žádný soubor.", 'error')
+        if not file or not file.filename:
+            await flash("Nebyl vybrán žádný soubor.", 'error')
+            logging.warning("Upload attempt with no file selected.")
+            return redirect(url_for(redirect_route))
+
+        MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
+
+        # Read the file in chunks to handle large files efficiently
+        # This is the key change to prevent both truncation and TypeErrors.
+        # Starlette's UploadFile is an async iterator.
+        content = bytearray()
+        chunk_count = 0
+        async for chunk in file:
+            content.extend(chunk)
+            chunk_count += 1
+            if len(content) > MAX_FILE_SIZE:
+                await flash(f"Soubor je příliš velký (max. {MAX_FILE_SIZE // 1024 // 1024} MB).", 'error')
+                logging.warning(f"Upload failed: File '{file.filename}' exceeded max size.")
+                return redirect(url_for(redirect_route))
+
+        # Convert bytearray to bytes for saving
+        content = bytes(content)
+
+        logging.info(f"File '{file.filename}' read successfully in {chunk_count} chunks, total size: {len(content)} bytes.")
+
+        save_item(session['user_id'], item_type, content)
+        logging.info(f"Item '{file.filename}' of type '{item_type}' saved to database.")
+
+        item_type_map = {
+            'image': 'Obrázek',
+            'document': 'Dokument',
+            'photo': 'Fotka'
+        }
+        item_type_cz = item_type_map.get(item_type, item_type.capitalize())
+        await flash(f"{item_type_cz} '{file.filename}' byl úspěšně uložen!", 'success')
+        return redirect(url_for('home'))
+
+    except Exception as e:
+        logging.error(f"An unexpected error occurred during upload: {e}", exc_info=True)
+        await flash("Během nahrávání souboru došlo k neočekávané chybě.", 'error')
         return redirect(url_for(redirect_route))
-
-    MAX_FILE_SIZE = 50 * 1024 * 1024 # 50 MB
-    content = await file.read()
-    if len(content) > MAX_FILE_SIZE:
-        await flash(f"Soubor je příliš velký (max. {MAX_FILE_SIZE // 1024 // 1024} MB).", 'error')
-        return redirect(url_for(redirect_route))
-
-    save_item(session['user_id'], item_type, content)
-
-    item_type_map = {
-        'image': 'Obrázek',
-        'document': 'Dokument',
-        'photo': 'Fotka'
-    }
-    item_type_cz = item_type_map.get(item_type, item_type.capitalize())
-    await flash(f"{item_type_cz} '{file.filename}' byl úspěšně uložen!", 'success')
-    return redirect(url_for('home'))
 
 @app.route("/add/image", methods=['POST'])
 async def add_image():
